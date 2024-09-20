@@ -1,0 +1,30 @@
+from fastapi import FastAPI, UploadFile, File
+import pandas as pd
+from io import StringIO
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Allow CORS for communication with React frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.post("/upload/")
+async def upload_file(file: UploadFile = File(...)):
+    if file.filename.endswith(".csv"):
+        contents = await file.read()
+        # Convert the file to a pandas DataFrame
+        df = pd.read_csv(StringIO(contents.decode("utf-8")))
+        # Basic analysis (column names, first 5 rows)
+        analysis = {
+            "columns": df.columns.tolist(),
+            "data": df.head().to_dict(orient="records")
+        }
+        return {"filename": file.filename, "analysis": analysis}
+    else:
+        return {"error": "Invalid file format. Please upload a CSV file."}
