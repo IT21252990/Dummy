@@ -1,9 +1,10 @@
 PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl> python main.py
 Traceback (most recent call last):
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 22, in <module>    
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 26, in <module>    
     main()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 15, in main        
-    json_storage = JsonStorage(config['storage']['raw_json'])
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: JsonStorage.__init__() missing 1 required positional argument: 'directory'
-PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl> 
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 20, in main        
+    json_transformer = JsonTransformer(app_name, json_storage)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\transformers\pandas\json_transformer.py", line 9, in __init__
+    super().__init__(app_name)
+TypeError: BaseTransformer.__init__() missing 1 required positional argument: 'storage'
