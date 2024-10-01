@@ -1,39 +1,73 @@
-logging.info("Transforming data using Pandas...")
+from datetime import datetime
+import logging
 
-        #Extract the needed fields form the raw data
-        city = data['name']
-        country = data['sys']['country']
-        datetime_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+import pandas as pd
 
-        temperature = data['main']['temp']
-        humidity = data['main']['humidity']
-        weather = data['weather'][0]['description']
-        pressure = data['main']['pressure']
-        wind_speed = data['wind']['speed']
+from transformers.pandas.base_transformer import BaseTransformer
 
-        # Define the metrics and their values
-        metrics = {
-            'temperature (Celsius)' : temperature,
-            'humidity (%)' : humidity,
-            'weather' : weather,
-            'pressure (hPa)' : pressure,
-            'wind speed (meter/sec)' : wind_speed
-        }
+class WeatherDataTransformer(BaseTransformer):
+    NAME = 'WEATHER_DATA_FROM_JSON_TRANSFORMER'
 
-        # Reshape into long format
+    def __init__(self, app_name: str, storage, file_name: str, file_type: str) -> None:
+        super().__init__(app_name , storage ) 
+        logging.info("Initialized Pandas DataTransformer.")
+        self._file_name = file_name
+        self._file_type = file_type
+
+    def _transform(self, data):
+        logging.info("Transforming data using Pandas...")
+
         rows = []
 
-        for metric , value in metrics.items():
-            rows.append({
-                'DateTime' : datetime_now,
-                'CountryCode' : country,
-                'City' : city,
-                'Metric' : metric,
-                'Value' : value
-            })
+        for entry in data:
+
+            #Extract the needed fields form the raw data
+            city = entry['name']
+            country = entry['sys']['country']
+            datetime_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            temperature = entry['main']['temp']
+            humidity = entry['main']['humidity']
+            weather = entry['weather'][0]['description']
+            pressure = entry['main']['pressure']
+            wind_speed = entry['wind']['speed']
+
+            # Define the metrics and their values
+            metrics = {
+                'temperature (Celsius)' : temperature,
+                'humidity (%)' : humidity,
+                'weather' : weather,
+                'pressure (hPa)' : pressure,
+                'wind speed (meter/sec)' : wind_speed
+            }
+
+            # Reshape data
+            for metric , value in metrics.items():
+                rows.append({
+                    'DateTime' : datetime_now,
+                    'CountryCode' : country,
+                    'City' : city,
+                    'Metric' : metric,
+                    'Value' : value
+                })
 
         # Create a pandas DataFrame
         df = pd.DataFrame(rows)
 
         logging.info("Data transformation using Pandas Completed.")
         return df
+    
+    def transform(self,data):
+        transformed_data = self._transform(data)
+        if transformed_data:
+            logging.info(f'Passing transformed data to storage...ready :')
+            # self._storage.save(transformed_data, self._file_name , self._file_type)
+
+
+
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\transformers\pandas\weather_data_from_json_transformer.py", line 62, in transform
+    if transformed_data:
+       ^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pandas\core\generic.py", line 1577, in __nonzero__
+    raise ValueError(
+ValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
