@@ -1,10 +1,17 @@
 PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl> python main.py
+2024-10-01 11:09:15,883 - INFO - Fetching weather data...
 Traceback (most recent call last):
   File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 26, in <module>    
     main()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 21, in main        
-    weather_extractor = select_extractor(config['extract']['name'])(app_name, config['extract'])
-                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\extractors\weather_extractor.py", line 11, in __init__
-    super().__init__(app_name)
-TypeError: BaseExtractor.__init__() missing 1 required positional argument: 'transformer'
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\main.py", line 23, in main        
+    weather_extractor.fetch()
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\extractors\base_extractor.py", line 10, in fetch
+    results , errors = self._fetch()
+                       ^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\extractors\weather_extractor.py", line 38, in _fetch
+    request_batches = self._prepare_request(self._cities, self._units, self._batch_size)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\extractors\weather_extractor.py", line 32, in _prepare_request
+    request_batches = [request_data[i:i+batch_size] for i in range(0, len(request_data), batch_size)]
+                                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object cannot be interpreted as an integer
