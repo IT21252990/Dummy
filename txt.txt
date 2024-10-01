@@ -1,4 +1,39 @@
-2024-10-01 12:11:25,280 - root - INFO - WeatherExtractor initialized with: self._cities=[], self._units='metric', self._sleep=10, self._batch_size=50
-2024-10-01 12:11:25,280 - root - INFO - Fetching weather data...
-2024-10-01 12:11:25,280 - root - INFO - Prepared 0 request batches.
-2024-10-01 12:11:25,280 - root - INFO - Fetched 0 results and encountered 0 errors.
+logging.info("Transforming data using Pandas...")
+
+        #Extract the needed fields form the raw data
+        city = data['name']
+        country = data['sys']['country']
+        datetime_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        temperature = data['main']['temp']
+        humidity = data['main']['humidity']
+        weather = data['weather'][0]['description']
+        pressure = data['main']['pressure']
+        wind_speed = data['wind']['speed']
+
+        # Define the metrics and their values
+        metrics = {
+            'temperature (Celsius)' : temperature,
+            'humidity (%)' : humidity,
+            'weather' : weather,
+            'pressure (hPa)' : pressure,
+            'wind speed (meter/sec)' : wind_speed
+        }
+
+        # Reshape into long format
+        rows = []
+
+        for metric , value in metrics.items():
+            rows.append({
+                'DateTime' : datetime_now,
+                'CountryCode' : country,
+                'City' : city,
+                'Metric' : metric,
+                'Value' : value
+            })
+
+        # Create a pandas DataFrame
+        df = pd.DataFrame(rows)
+
+        logging.info("Data transformation using Pandas Completed.")
+        return df
