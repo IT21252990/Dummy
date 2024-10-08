@@ -1,35 +1,13 @@
-Traceback (most recent call last):
-  File "pyarrow\\io.pxi", line 2052, in pyarrow.lib.get_writer
-  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\util.py", line 151, in _stringify_path
-    raise TypeError("not a path-like object")
-TypeError: not a path-like object
+1. How many diversity networks do we have at Acuity currently?
 
-During handling of the above exception, another exception occurred:
+A.	2
+B.	3
+C.	4
+D.	6
 
-Traceback (most recent call last):
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 42, in <module>
-    main()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 39, in main
-    initialize_configurations(config=config, platform=args.platform)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 24, in initialize_configurations
-    extractor.fetch()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\extractors\base_extractor.py", line 13, in fetch
-    self._transformer.transform(results)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 12, in transform
-    df = self._transform(data)
-         ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\utils.py", line 30, in _transform
-    data = transformer.transform(data)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 17, in transform
-    self._storage.save(df)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\storages\base_storage.py", line 9, in save
-    self._save(data)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\storages\file_storage.py", line 42, in _save
-    csv.write_csv(data , f, write_options=csv.WriteOptions(include_header=True))
-  File "pyarrow\\_csv.pyx", line 1499, in pyarrow._csv.write_csv
-  File "pyarrow\\io.pxi", line 2056, in pyarrow.lib.get_writer
-  File "pyarrow\\io.pxi", line 873, in pyarrow.lib.PythonFile.__cinit__
-TypeError: binary file expected, got text file
+2. Which of these is a derived benefit from diverse and inclusive teams?
 
-C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl>
+A.	Enhanced Employee Engagement and Well-being 
+B.	Improved Business Performance
+C.	Better Creativity and Innovation
+D.	All of these 
