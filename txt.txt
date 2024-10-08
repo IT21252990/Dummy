@@ -1,1 +1,97 @@
-test
+from datetime import datetime
+import logging
+import pyarrow as pa
+import polars as pl
+import pandas as pd
+
+from transformers.base_transformer import BaseTransformer
+
+class WeatherTransformerPolars(BaseTransformer):
+    NAME = 'WEATHER_TRANSFORMER'
+
+    def __init__(self, app_name: str, storage, config: dict) -> None:
+        super().__init__(app_name , storage, config) 
+        logging.info("Initialized Polars DataTransformer.")
+
+    def _transform(self, data: pa.Table) -> pa.Table:
+        logging.info("Transforming data using Polars...")
+
+        # Convert arrow Table to Pandas DataFrame
+        df: pd.DataFrame = data.to_pandas()
+
+        # Convert Pandas DataFrame into Polars DataFrame
+        df_polars: pl.DataFrame = pl.from_pandas(df)
+
+        rows = []
+
+        for entry in df_polars.rows():
+
+            #Extract the needed fields form the raw data
+            city = entry['name']
+            country = entry['sys']['country']
+            datetime_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+            temperature = entry['main']['temp']
+            humidity = entry['main']['humidity']
+            weather = entry['weather'][0]['description']
+            pressure = entry['main']['pressure']
+            wind_speed = entry['wind']['speed']
+
+            # Define the metrics and their values
+            metrics = {
+                'temperature (Celsius)' : temperature,
+                'humidity (%)' : humidity,
+                'weather' : weather,
+                'pressure (hPa)' : pressure,
+                'wind speed (meter/sec)' : wind_speed
+            }
+
+            # Reshape data
+            for metric , value in metrics.items():
+                rows.append({
+                    'DateTime' : datetime_now,
+                    'CountryCode' : country,
+                    'City' : city,
+                    'Metric' : metric,
+                    'Value' : value
+                })
+
+        # Create a polars DataFrame
+        df_transformed = pl.DataFrame(rows)
+        
+        # Convert polars DtaFrame into pandas DataFrame
+        pandas_df = df_transformed.to_pandas()
+
+        #pandas_df['Values'] = pandas_df['Values'].astype(str)
+
+        arrow_table = pa.Table.from_pandas(pandas_df)
+
+        logging.info("Data transformation using Polars Completed.")
+        return arrow_table
+
+------------
+
+Traceback (most recent call last):
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 42, in <module>
+    main()
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 39, in main
+    initialize_configurations(config=config, platform=args.platform)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 24, in initialize_configurations
+    extractor.fetch()
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\extractors\base_extractor.py", line 13, in fetch
+    self._transformer.transform(results)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 12, in transform
+    df = self._transform(data)
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\utils.py", line 29, in _transform
+    data = transformer.transform(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 12, in transform
+    df = self._transform(data)
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\polars\weather_transformer_polars.py", line 30, in _transform
+    city = entry['name']
+           ~~~~~^^^^^^^^
+TypeError: tuple indices must be integers or slices, not str
+
+C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>
