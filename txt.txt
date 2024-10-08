@@ -1,88 +1,6 @@
-class WeatherTransformer(BaseTransformer):
-    NAME = 'WEATHER_TRANSFORMER'
-
-    def __init__(self, app_name: str, storage, config: dict) -> pa.Table:
-        super().__init__(app_name , storage, config) 
-        logging.info("Initialized Pandas DataTransformer.")
-
-    def _transform(self, data: pa.Table) :
-        logging.info("Transforming data using Pandas...")
-        # Convert arrow table into pandas
-        df: pd.DataFrame = data.to_pandas()        
-
-        print(df.dtypes)
-        print('------------------------------------------------------------------------------------------')
-
-        rows = []
-
-        for entry in df:
-
-            #Extract the needed fields form the raw data
-            city = entry['name']
-            country = entry['sys']['country']
-            datetime_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-            temperature = entry['main']['temp']
-            humidity = entry['main']['humidity']
-            weather = entry['weather'][0]['description']
-            pressure = entry['main']['pressure']
-            wind_speed = entry['wind']['speed']
-
-            # Define the metrics and their values
-            metrics = {
-                'temperature (Celsius)' : temperature,
-                'humidity (%)' : humidity,
-                'weather' : weather,
-                'pressure (hPa)' : pressure,
-                'wind speed (meter/sec)' : wind_speed
-            }
-
-            # Reshape data
-            for metric , value in metrics.items():
-                rows.append({
-                    'DateTime' : datetime_now,
-                    'CountryCode' : country,
-                    'City' : city,
-                    'Metric' : metric,
-                    'Value' : value
-                })
-
-        # Create a pandas DataFrame
-        df_transformed = pd.DataFrame(rows)
-
-        arrow_table = pa.Table.from_pandas(df_transformed)
-
-        logging.info("Data transformation using Pandas Completed.")
-        return arrow_table
-
-
----------------------
-
-C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl>python main.py --config weather_config.yaml --platform pandas
-TRANSFORMER_CHAIN transformer selected
-2024-10-08 14:33:51,309 - root - INFO - Initialized Chain Transformer.
-2024-10-08 14:33:51,309 - root - INFO - the api key is : 341d03a5a889f591095a6a9aa9a24e71
-2024-10-08 14:33:51,324 - root - INFO - Fetching weather data...
-2024-10-08 14:33:51,639 - root - INFO - Weather data for Colombo fetched successfully
-2024-10-08 14:33:51,796 - root - INFO - Weather data for London fetched successfully
-2024-10-08 14:33:51,953 - root - INFO - Weather data for New York fetched successfully
-2024-10-08 14:33:52,141 - root - INFO - Weather data for Paris fetched successfully
-2024-10-08 14:33:52,284 - root - INFO - Weather data for Tokyo fetched successfully
-2024-10-08 14:33:52,426 - root - INFO - Weather data for Sydney fetched successfully
-2024-10-08 14:33:52,584 - root - INFO - Weather data for Berlin fetched successfully
-2024-10-08 14:33:52,725 - root - INFO - Weather data for Delhi fetched successfully
-2024-10-08 14:33:52,881 - root - INFO - Weather data for Moscow fetched successfully
-2024-10-08 14:33:53,023 - root - INFO - Weather data for Beijing fetched successfully
-2024-10-08 14:33:55,038 - root - INFO - Fetched 10 results and encountered 0 errors.
-self_config : {'name': 'TRANSFORMER_CHAIN', 'transformers': [{'name': 'NO_OPP_TRANSFORMER', 'return_obj': True}, {'name': 'WEATHER_TRANSFORMER'}]}
-transformers : [{'name': 'NO_OPP_TRANSFORMER', 'return_obj': True}, {'name': 'WEATHER_TRANSFORMER'}]
-t_config: {'name': 'NO_OPP_TRANSFORMER', 'return_obj': True} , platform:  pandas
-NO_OPP_TRANSFORMER transformer selected
-2024-10-08 14:33:55,038 - root - INFO - Transforming data...
-t_config: {'name': 'WEATHER_TRANSFORMER'} , platform:  pandas
 WEATHER_TRANSFORMER transformer selected
-2024-10-08 14:33:55,038 - root - INFO - Initialized Pandas DataTransformer.
-2024-10-08 14:33:55,050 - root - INFO - Transforming data using Pandas...
+2024-10-08 14:39:21,738 - root - INFO - Initialized Pandas DataTransformer.
+2024-10-08 14:39:21,738 - root - INFO - Transforming data using Pandas...
 coord         object
 weather       object
 base          object
@@ -117,9 +35,21 @@ Traceback (most recent call last):
   File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 12, in transform
     df = self._transform(data)
          ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\pandas\weather_transformer_pandas.py", line 49, in _transform
-    city = entry['name']
-           ~~~~~^^^^^^^^
-TypeError: string indices must be integers, not 'str'
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\pandas\weather_transformer_pandas.py", line 81, in _transform
+    arrow_table = pa.Table.from_pandas(df_transformed)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow\\table.pxi", line 3869, in pyarrow.lib.Table.from_pandas
+  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\pandas_compat.py", line 613, in dataframe_to_arrays
+    arrays = [convert_column(c, f)
+              ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\pandas_compat.py", line 600, in convert_column
+    raise e
+  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\pandas_compat.py", line 594, in convert_column
+    result = pa.array(col, type=type_, from_pandas=True, safe=safe)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pyarrow\\array.pxi", line 340, in pyarrow.lib.array
+  File "pyarrow\\array.pxi", line 86, in pyarrow.lib._ndarray_to_array
+  File "pyarrow\\error.pxi", line 91, in pyarrow.lib.check_status
+pyarrow.lib.ArrowInvalid: ("Could not convert 'overcast clouds' with type str: tried to convert to double", 'Conversion failed for column Value with type object')
 
 C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl>
