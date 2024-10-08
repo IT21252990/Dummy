@@ -1,25 +1,21 @@
-from datetime import datetime
-import logging
+class WeatherTransformer(BaseTransformer):
+    NAME = 'WEATHER_TRANSFORMER'
 
-import pandas as pd
-
-from transformers.pandas.base_transformer import BaseTransformer
-
-class WeatherDataTransformer(BaseTransformer):
-    NAME = 'WEATHER_DATA_FROM_JSON_TRANSFORMER'
-
-    def __init__(self, app_name: str, storage, file_name: str, file_type: str) -> None:
-        super().__init__(app_name , storage ) 
+    def __init__(self, app_name: str, storage, config: dict) -> pa.Table:
+        super().__init__(app_name , storage, config) 
         logging.info("Initialized Pandas DataTransformer.")
-        self._file_name = file_name
-        self._file_type = file_type
 
-    def _transform(self, data):
+    def _transform(self, data: pa.Table) :
         logging.info("Transforming data using Pandas...")
+        # Convert arrow table into pandas
+        df: pd.DataFrame = data.to_pandas()        
+
+        print(df.dtypes)
+        print('------------------------------------------------------------------------------------------')
 
         rows = []
 
-        for entry in data:
+        for entry in df:
 
             #Extract the needed fields form the raw data
             city = entry['name']
@@ -52,22 +48,78 @@ class WeatherDataTransformer(BaseTransformer):
                 })
 
         # Create a pandas DataFrame
-        df = pd.DataFrame(rows)
+        df_transformed = pd.DataFrame(rows)
+
+        arrow_table = pa.Table.from_pandas(df_transformed)
 
         logging.info("Data transformation using Pandas Completed.")
-        return df
-    
-    def transform(self,data):
-        transformed_data = self._transform(data)
-        if transformed_data:
-            logging.info(f'Passing transformed data to storage...ready :')
-            # self._storage.save(transformed_data, self._file_name , self._file_type)
+        return arrow_table
 
 
+---------------------
 
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Taks_01_v2\etl\transformers\pandas\weather_data_from_json_transformer.py", line 62, in transform
-    if transformed_data:
-       ^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pandas\core\generic.py", line 1577, in __nonzero__
-    raise ValueError(
-ValueError: The truth value of a DataFrame is ambiguous. Use a.empty, a.bool(), a.item(), a.any() or a.all().
+C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl>python main.py --config weather_config.yaml --platform pandas
+TRANSFORMER_CHAIN transformer selected
+2024-10-08 14:33:51,309 - root - INFO - Initialized Chain Transformer.
+2024-10-08 14:33:51,309 - root - INFO - the api key is : 341d03a5a889f591095a6a9aa9a24e71
+2024-10-08 14:33:51,324 - root - INFO - Fetching weather data...
+2024-10-08 14:33:51,639 - root - INFO - Weather data for Colombo fetched successfully
+2024-10-08 14:33:51,796 - root - INFO - Weather data for London fetched successfully
+2024-10-08 14:33:51,953 - root - INFO - Weather data for New York fetched successfully
+2024-10-08 14:33:52,141 - root - INFO - Weather data for Paris fetched successfully
+2024-10-08 14:33:52,284 - root - INFO - Weather data for Tokyo fetched successfully
+2024-10-08 14:33:52,426 - root - INFO - Weather data for Sydney fetched successfully
+2024-10-08 14:33:52,584 - root - INFO - Weather data for Berlin fetched successfully
+2024-10-08 14:33:52,725 - root - INFO - Weather data for Delhi fetched successfully
+2024-10-08 14:33:52,881 - root - INFO - Weather data for Moscow fetched successfully
+2024-10-08 14:33:53,023 - root - INFO - Weather data for Beijing fetched successfully
+2024-10-08 14:33:55,038 - root - INFO - Fetched 10 results and encountered 0 errors.
+self_config : {'name': 'TRANSFORMER_CHAIN', 'transformers': [{'name': 'NO_OPP_TRANSFORMER', 'return_obj': True}, {'name': 'WEATHER_TRANSFORMER'}]}
+transformers : [{'name': 'NO_OPP_TRANSFORMER', 'return_obj': True}, {'name': 'WEATHER_TRANSFORMER'}]
+t_config: {'name': 'NO_OPP_TRANSFORMER', 'return_obj': True} , platform:  pandas
+NO_OPP_TRANSFORMER transformer selected
+2024-10-08 14:33:55,038 - root - INFO - Transforming data...
+t_config: {'name': 'WEATHER_TRANSFORMER'} , platform:  pandas
+WEATHER_TRANSFORMER transformer selected
+2024-10-08 14:33:55,038 - root - INFO - Initialized Pandas DataTransformer.
+2024-10-08 14:33:55,050 - root - INFO - Transforming data using Pandas...
+coord         object
+weather       object
+base          object
+main          object
+visibility     int64
+wind          object
+clouds        object
+dt             int64
+sys           object
+timezone       int64
+id             int64
+name          object
+cod            int64
+rain          object
+dtype: object
+------------------------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 42, in <module>
+    main()
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 39, in main
+    initialize_configurations(config=config, platform=args.platform)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 24, in initialize_configurations
+    extractor.fetch()
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\extractors\base_extractor.py", line 13, in fetch
+    self._transformer.transform(results)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 12, in transform
+    df = self._transform(data)
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\utils.py", line 30, in _transform
+    data = transformer.transform(data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 12, in transform
+    df = self._transform(data)
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\pandas\weather_transformer_pandas.py", line 49, in _transform
+    city = entry['name']
+           ~~~~~^^^^^^^^
+TypeError: string indices must be integers, not 'str'
+
+C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl>
