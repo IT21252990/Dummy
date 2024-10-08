@@ -1,22 +1,11 @@
-WEATHER_TRANSFORMER transformer selected
-2024-10-08 14:39:21,738 - root - INFO - Initialized Pandas DataTransformer.
-2024-10-08 14:39:21,738 - root - INFO - Transforming data using Pandas...
-coord         object
-weather       object
-base          object
-main          object
-visibility     int64
-wind          object
-clouds        object
-dt             int64
-sys           object
-timezone       int64
-id             int64
-name          object
-cod            int64
-rain          object
-dtype: object
-------------------------------------------------------------------------------------------
+Traceback (most recent call last):
+  File "pyarrow\\io.pxi", line 2052, in pyarrow.lib.get_writer
+  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\util.py", line 151, in _stringify_path
+    raise TypeError("not a path-like object")
+TypeError: not a path-like object
+
+During handling of the above exception, another exception occurred:
+
 Traceback (most recent call last):
   File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\main.py", line 42, in <module>
     main()
@@ -32,24 +21,15 @@ Traceback (most recent call last):
   File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\utils.py", line 30, in _transform
     data = transformer.transform(data)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 12, in transform
-    df = self._transform(data)
-         ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\pandas\weather_transformer_pandas.py", line 81, in _transform
-    arrow_table = pa.Table.from_pandas(df_transformed)
-                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "pyarrow\\table.pxi", line 3869, in pyarrow.lib.Table.from_pandas
-  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\pandas_compat.py", line 613, in dataframe_to_arrays
-    arrays = [convert_column(c, f)
-              ^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\pandas_compat.py", line 600, in convert_column
-    raise e
-  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\pyarrow\pandas_compat.py", line 594, in convert_column
-    result = pa.array(col, type=type_, from_pandas=True, safe=safe)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "pyarrow\\array.pxi", line 340, in pyarrow.lib.array
-  File "pyarrow\\array.pxi", line 86, in pyarrow.lib._ndarray_to_array
-  File "pyarrow\\error.pxi", line 91, in pyarrow.lib.check_status
-pyarrow.lib.ArrowInvalid: ("Could not convert 'overcast clouds' with type str: tried to convert to double", 'Conversion failed for column Value with type object')
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\transformers\base_transformer.py", line 17, in transform
+    self._storage.save(df)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\storages\base_storage.py", line 9, in save
+    self._save(data)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl\storages\file_storage.py", line 42, in _save
+    csv.write_csv(data , f, write_options=csv.WriteOptions(include_header=True))
+  File "pyarrow\\_csv.pyx", line 1499, in pyarrow._csv.write_csv
+  File "pyarrow\\io.pxi", line 2056, in pyarrow.lib.get_writer
+  File "pyarrow\\io.pxi", line 873, in pyarrow.lib.PythonFile.__cinit__
+TypeError: binary file expected, got text file
 
 C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v3\etl>
