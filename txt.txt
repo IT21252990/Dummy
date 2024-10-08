@@ -1,75 +1,50 @@
-from datetime import datetime
+import json
+import os
 import logging
 import pyarrow as pa
-import polars as pl
-import pandas as pd
+from pyarrow import csv
+from storages.base_storage import BaseStorage
 
-from transformers.base_transformer import BaseTransformer
+class FileStorage(BaseStorage):
+    NAME = 'FILE_STORAGE'
 
-class WeatherTransformerPolars(BaseTransformer):
-    NAME = 'WEATHER_TRANSFORMER'
+    def __init__(self, app_name: str, config: dict) -> None:
+        super().__init__(app_name, config)
+        self._directory = config.get('directory')
+        self.output_file_name = config.get('file_name')
+        self.output_file_type = config.get('file_type')
 
-    def __init__(self, app_name: str, storage, config: dict) -> None:
-        super().__init__(app_name , storage, config) 
-        logging.info("Initialized Polars DataTransformer.")
+        #Create the directory if it doesn't exist
+        output_dir = os.path.dirname(self._directory)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir , exist_ok=True)
 
-    def _transform(self, data: pa.Table) -> pa.Table:
-        logging.info("Transforming data using Polars...")
 
-        # Convert arrow Table to Pandas DataFrame
-        df: pd.DataFrame = data.to_pandas()
+    def _save(self,data):
+        # IF output file or file type not specified raise an error
 
-        # Convert Pandas DataFrame into Polars DataFrame
-        df_polars: pl.DataFrame = pl.from_pandas(df)
+        # if()
 
-        rows = []
+        output_file = os.path.join(os.path.dirname(self._directory), f'{self.output_file_name}.{self.output_file_type}')
+        logging.info(f'saving data to {output_file}')
 
-        for entry in df_polars.rows():
+        file_exists = os.path.isfile(output_file)
 
-            #Extract the needed fields form the raw data
-            city = entry['name']
-            country = entry['sys']['country']
-            datetime_now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        if (self.output_file_type.lower() == 'json'):
+            data_dict = data.to_pylist()  # data.to_pydict --> convert to the ordered python dictionary
+            # save the json data
+            with open(output_file, 'w') as f:
+                json.dump(data_dict, f, indent=4)
+        elif (self.output_file_type.lower() == 'csv'):
+            write_options = csv.WriteOptions(include_header=not file_exists)
 
-            temperature = entry['main']['temp']
-            humidity = entry['main']['humidity']
-            weather = entry['weather'][0]['description']
-            pressure = entry['main']['pressure']
-            wind_speed = entry['wind']['speed']
-
-            # Define the metrics and their values
-            metrics = {
-                'temperature (Celsius)' : temperature,
-                'humidity (%)' : humidity,
-                'weather' : weather,
-                'pressure (hPa)' : pressure,
-                'wind speed (meter/sec)' : wind_speed
-            }
-
-            # Reshape data
-            for metric , value in metrics.items():
-                rows.append({
-                    'DateTime' : datetime_now,
-                    'CountryCode' : country,
-                    'City' : city,
-                    'Metric' : metric,
-                    'Value' : value
-                })
-
-        # Create a polars DataFrame
-        df_transformed = pl.DataFrame(rows)
+            with open(output_file, 'ab' if file_exists else 'wb') as f:
+                csv.write_csv(data , f, write_options=write_options)
+        else:
+            raise ValueError('Invalid data type or file type.')
         
-        # Convert polars DtaFrame into pandas DataFrame
-        pandas_df = df_transformed.to_pandas()
-
-        #pandas_df['Values'] = pandas_df['Values'].astype(str)
-
-        arrow_table = pa.Table.from_pandas(pandas_df)
-
-        logging.info("Data transformation using Polars Completed.")
-        return arrow_table
-
-------------
+        logging.info(f'Data saved successfully at {output_file}')
+----------------
 
 Traceback (most recent call last):
   File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 42, in <module>
@@ -86,12 +61,14 @@ Traceback (most recent call last):
   File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\utils.py", line 29, in _transform
     data = transformer.transform(data)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 12, in transform
-    df = self._transform(data)
-         ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\polars\weather_transformer_polars.py", line 30, in _transform
-    city = entry['name']
-           ~~~~~^^^^^^^^
-TypeError: tuple indices must be integers or slices, not str
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 17, in transform
+    self._storage.save(df)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\base_storage.py", line 9, in save
+    self._save(data)
+  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\file_storage.py", line 42, in _save
+    csv.write_csv(data , f, write_options=write_options)
+  File "pyarrow\\_csv.pyx", line 1509, in pyarrow._csv.write_csv
+  File "pyarrow\\error.pxi", line 91, in pyarrow.lib.check_status
+pyarrow.lib.ArrowInvalid: Unsupported Type:struct<lat: double, lon: double>
 
 C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>
