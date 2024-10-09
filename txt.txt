@@ -3,31 +3,46 @@ import logging
 import pyarrow as pa
 import pyarrow.json as pj
 import pyarrow.csv as pv
+import glob
+import os
+import re
+from datetime import datetime
 from extractors.base_extractor import BaseExtractor
 
-class FileDataExtractor(BaseExtractor):
-    NAME = 'FILE_DATA_EXTRACTOR'
+class FileListExtractor(BaseExtractor):
+    NAME = 'FILE_LIST_EXTRACTOR'
 
     def __init__(self , app_name: str , config: dict , transformer) -> None:
         super().__init__(app_name, transformer, config)
         self._file_directory = config.get('directory' , '')
         self._file_name_include = config.get('filters')['include']
-        self._get_last_file = config.get('get_last')
+        self._get_last_file = config.get('filters')['get_last']
         self._file_type = config.get('filters')['suffix']
 
     def _fetch(self):
-        logging.info('Reading data from file...')
+        logging.info('Reading data from files...')
 
-        file_pattern = f'{self._file_name_include}_*{self._file_type}'
+        # # Regular expression pattern to match filenames ( weather_data_YYYY_MM_DD_HH_MM_SS.csv )
+        # FILE_PATTERN_REGEX = re.compile(r'weather_data_(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})_(\d{2})\.csv')
 
-        file_list = f'{self._file_directory}{file_pattern}'
+        file_pattern = os.path.join(self._file_directory, f'{self._file_name_include}_*{self._file_type}')
 
-        # file_path = f'{self._file_directory}{self._file_name}.{self._file_type}'
-        arrow_table = None
+        file_list = glob.glob(file_pattern)
+
+        if not file_list:
+            logging.error(f'No files found with pattern : {file_pattern}')
+            return None, [f'No files found with pattern : {file_pattern}']
+
+        # Sort files to get last file if needed
+        if self._get_last_file:
+            file_list.sort(key=os.path.getmtime, reverse=True)
+            file_list = [file_list[0]]
+
+        arrow_table = None 
 
         try:
-            if self._file_type == 'json':
-                arrow_table = pj.read_json(file_list)
+            if self._file_type == '.json':
+                arrow_table =[ pj.read_json(file) for file in file_list]
             elif self._file_type == '.csv':
 
                 arrow_table = [pv.read_csv(file) for file in file_list]
@@ -35,41 +50,25 @@ class FileDataExtractor(BaseExtractor):
                 raise ValueError(f'Unsupported file type: {self._file_type}')
 
 
-            logging.info(f'Successfully read data from files')
+            logging.info(f'Successfully read data from {len(file_list)} file(s). including {file_list}')
+            
+            print('********************&&&&&&&&&&&&&&&&&&')
+            table = pa.Table.from_array(arrow_table)
+            print('********************&&&&&&&&&&&&&&&&&&')
+            print(table)
+            print('********************&&&&&&&&&&&&&&&&&&')
+
             return arrow_table, []
         except Exception as e:
             logging.error(f'Failed to read data from files. Error: {str(e)}')
             return None, [str(e)]
 
--------
+------------
 
-appName: FileDataToFile
-
-meta:
-  logging_level: INFO
-
-extract:
-  name: FILE_DATA_EXTRACTOR
-  directory: etl/output/
-  # housekeeping:
-  # reprocess:
-  filters:
-    get_last: true
-    # days_back:
-    include:
-      - "weather_data"
-    suffix:
-      - .csv
-
-transformer:
-  name: TRANSFORMER_CHAIN
-  transformers:
-    - name: NO_OPP_TRANSFORMER
-
-storage:
-  name: FILE_STORAGE
-  directory: output/
-  file_name: all_weather_data
-  file_type: .csv
-  
-
+C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>python main.py --config file_config.yaml --platform pandas
+2024-10-09 09:59:33,121 - root - INFO - Using TRANSFORMER_CHAIN ...
+2024-10-09 09:59:33,121 - root - INFO - Initialized Chain Transformer.
+2024-10-09 09:59:33,121 - root - INFO - Reading data from files...
+2024-10-09 09:59:33,134 - root - INFO - Successfully read data from 2 file(s). including ['output\\weather_data_2024_10_09_08_41_08.csv', 'output\\weather_data_2024_10_09_08_43_46.csv']
+********************&&&&&&&&&&&&&&&&&&
+2024-10-09 09:59:33,138 - root - ERROR - Failed to read data from files. Error: type object 'pyarrow.lib.Table' has no attribute 'from_array'
