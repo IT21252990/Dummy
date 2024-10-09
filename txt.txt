@@ -1,62 +1,352 @@
-import logging
-import pyarrow as pa
-import pyarrow.json as pj
-import pyarrow.csv as pv
-import glob
-import os
-from extractors.base_extractor import BaseExtractor
-
-class FileListExtractor(BaseExtractor):
-    NAME = 'FILE_LIST_EXTRACTOR'
-
-    def __init__(self , app_name: str , config: dict , transformer) -> None:
-        super().__init__(app_name, transformer, config)
-        self._file_directory = config.get('directory' , '')
-        self._file_name_include = config.get('filters')['include']
-        self._get_last_file = config.get('filters')['get_last']
-        self._file_type = config.get('filters')['suffix']
-
-    def _fetch(self):
-        logging.info('Reading data from files...')
-
-        file_pattern = os.path.join(self._file_directory, f'{self._file_name_include}_*{self._file_type}')
-
-        file_list = glob.glob(file_pattern)
-
-        if not file_list:
-            logging.error(f'No files found with pattern : {file_pattern}')
-            return None, [f'No files found with pattern : {file_pattern}']
-
-        # Sort files to get last file if needed
-        if self._get_last_file:
-            file_list.sort(key=os.path.getmtime, reverse=True)
-            file_list = [file_list[0]]
-
-        table = [] 
-
-        try:
-            if self._file_type == '.json':
-                table =[ pj.read_json(file) for file in file_list]
-            elif self._file_type == '.csv':
-
-                table = [pv.read_csv(file) for file in file_list]
-            else:
-                raise ValueError(f'Unsupported file type: {self._file_type}')
-
-            logging.info(f'Successfully read data from {len(file_list)} file(s).')
-   
-            arrow_table = pa.concat_tables(table)
-
-            return arrow_table, []
-        
-        except Exception as e:
-            logging.error(f'Failed to read data from files. Error: {str(e)}')
-            return None, [str(e)]
-
----------
-
-C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>python main.py --config file_config.yaml --platform pandas
-2024-10-09 11:06:08,743 - root - INFO - Using TRANSFORMER_CHAIN ...
-2024-10-09 11:06:08,743 - root - INFO - Initialized Chain Transformer.
-2024-10-09 11:06:08,743 - root - INFO - Reading data from files...
-2024-10-09 11:06:08,758 - root - ERROR - Failed to read data from files. Error: JSON parse error: Column() changed from object to array in row 0
+[
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "LK",
+        "City": "Colombo",
+        "Metric": "temperature (Celsius)",
+        "Value": "28.75"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "LK",
+        "City": "Colombo",
+        "Metric": "humidity (%)",
+        "Value": "69"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "LK",
+        "City": "Colombo",
+        "Metric": "weather",
+        "Value": "broken clouds"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "LK",
+        "City": "Colombo",
+        "Metric": "pressure (hPa)",
+        "Value": "1012"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "LK",
+        "City": "Colombo",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "3.37"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "GB",
+        "City": "London",
+        "Metric": "temperature (Celsius)",
+        "Value": "12.94"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "GB",
+        "City": "London",
+        "Metric": "humidity (%)",
+        "Value": "91"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "GB",
+        "City": "London",
+        "Metric": "weather",
+        "Value": "overcast clouds"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "GB",
+        "City": "London",
+        "Metric": "pressure (hPa)",
+        "Value": "987"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "GB",
+        "City": "London",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "3.13"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "US",
+        "City": "New York",
+        "Metric": "temperature (Celsius)",
+        "Value": "14.83"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "US",
+        "City": "New York",
+        "Metric": "humidity (%)",
+        "Value": "57"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "US",
+        "City": "New York",
+        "Metric": "weather",
+        "Value": "broken clouds"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "US",
+        "City": "New York",
+        "Metric": "pressure (hPa)",
+        "Value": "1012"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "US",
+        "City": "New York",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "4.12"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "FR",
+        "City": "Paris",
+        "Metric": "temperature (Celsius)",
+        "Value": "13.7"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "FR",
+        "City": "Paris",
+        "Metric": "humidity (%)",
+        "Value": "95"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "FR",
+        "City": "Paris",
+        "Metric": "weather",
+        "Value": "light intensity drizzle rain"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "FR",
+        "City": "Paris",
+        "Metric": "pressure (hPa)",
+        "Value": "993"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "FR",
+        "City": "Paris",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "5.14"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "JP",
+        "City": "Tokyo",
+        "Metric": "temperature (Celsius)",
+        "Value": "16.83"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "JP",
+        "City": "Tokyo",
+        "Metric": "humidity (%)",
+        "Value": "91"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "JP",
+        "City": "Tokyo",
+        "Metric": "weather",
+        "Value": "moderate rain"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "JP",
+        "City": "Tokyo",
+        "Metric": "pressure (hPa)",
+        "Value": "1011"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "JP",
+        "City": "Tokyo",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "8.75"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "AU",
+        "City": "Sydney",
+        "Metric": "temperature (Celsius)",
+        "Value": "16.13"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "AU",
+        "City": "Sydney",
+        "Metric": "humidity (%)",
+        "Value": "65"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "AU",
+        "City": "Sydney",
+        "Metric": "weather",
+        "Value": "broken clouds"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "AU",
+        "City": "Sydney",
+        "Metric": "pressure (hPa)",
+        "Value": "1024"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "AU",
+        "City": "Sydney",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "5.14"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "DE",
+        "City": "Berlin",
+        "Metric": "temperature (Celsius)",
+        "Value": "13.69"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "DE",
+        "City": "Berlin",
+        "Metric": "humidity (%)",
+        "Value": "97"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "DE",
+        "City": "Berlin",
+        "Metric": "weather",
+        "Value": "light rain"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "DE",
+        "City": "Berlin",
+        "Metric": "pressure (hPa)",
+        "Value": "1000"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "DE",
+        "City": "Berlin",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "3.6"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "IN",
+        "City": "Delhi",
+        "Metric": "temperature (Celsius)",
+        "Value": "29.05"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "IN",
+        "City": "Delhi",
+        "Metric": "humidity (%)",
+        "Value": "65"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "IN",
+        "City": "Delhi",
+        "Metric": "weather",
+        "Value": "haze"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "IN",
+        "City": "Delhi",
+        "Metric": "pressure (hPa)",
+        "Value": "1012"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "IN",
+        "City": "Delhi",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "1.54"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "RU",
+        "City": "Moscow",
+        "Metric": "temperature (Celsius)",
+        "Value": "6.95"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "RU",
+        "City": "Moscow",
+        "Metric": "humidity (%)",
+        "Value": "83"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "RU",
+        "City": "Moscow",
+        "Metric": "weather",
+        "Value": "overcast clouds"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "RU",
+        "City": "Moscow",
+        "Metric": "pressure (hPa)",
+        "Value": "1012"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "RU",
+        "City": "Moscow",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "3.81"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "CN",
+        "City": "Beijing",
+        "Metric": "temperature (Celsius)",
+        "Value": "17.94"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "CN",
+        "City": "Beijing",
+        "Metric": "humidity (%)",
+        "Value": "48"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "CN",
+        "City": "Beijing",
+        "Metric": "weather",
+        "Value": "overcast clouds"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "CN",
+        "City": "Beijing",
+        "Metric": "pressure (hPa)",
+        "Value": "1013"
+    },
+    {
+        "DateTime": "2024-10-09 10:53:24",
+        "CountryCode": "CN",
+        "City": "Beijing",
+        "Metric": "wind speed (meter/sec)",
+        "Value": "1.26"
+    }
+]
