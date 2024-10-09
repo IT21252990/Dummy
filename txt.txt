@@ -1,74 +1,75 @@
 import json
-import os
 import logging
 import pyarrow as pa
-from pyarrow import csv
-from storages.base_storage import BaseStorage
+import pyarrow.json as pj
+import pyarrow.csv as pv
+from extractors.base_extractor import BaseExtractor
 
-class FileStorage(BaseStorage):
-    NAME = 'FILE_STORAGE'
+class FileDataExtractor(BaseExtractor):
+    NAME = 'FILE_DATA_EXTRACTOR'
 
-    def __init__(self, app_name: str, config: dict) -> None:
-        super().__init__(app_name, config)
-        self._directory = config.get('directory')
-        self.output_file_name = config.get('file_name')
-        self.output_file_type = config.get('file_type')
+    def __init__(self , app_name: str , config: dict , transformer) -> None:
+        super().__init__(app_name, transformer, config)
+        self._file_directory = config.get('directory' , '')
+        self._file_name_include = config.get('filters')['include']
+        self._get_last_file = config.get('get_last')
+        self._file_type = config.get('filters')['suffix']
 
-        #Create the directory if it doesn't exist
-        output_dir = os.path.dirname(self._directory)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir , exist_ok=True)
+    def _fetch(self):
+        logging.info('Reading data from file...')
+
+        file_pattern = f'{self._file_name_include}_*{self._file_type}'
+
+        file_list = f'{self._file_directory}{file_pattern}'
+
+        # file_path = f'{self._file_directory}{self._file_name}.{self._file_type}'
+        arrow_table = None
+
+        try:
+            if self._file_type == 'json':
+                arrow_table = pj.read_json(file_list)
+            elif self._file_type == '.csv':
+
+                arrow_table = [pv.read_csv(file) for file in file_list]
+            else:
+                raise ValueError(f'Unsupported file type: {self._file_type}')
 
 
-    def _save(self,data):
-        # IF output file or file type not specified raise an error
+            logging.info(f'Successfully read data from files')
+            return arrow_table, []
+        except Exception as e:
+            logging.error(f'Failed to read data from files. Error: {str(e)}')
+            return None, [str(e)]
 
-        # if()
+-------
 
-        output_file = os.path.join(os.path.dirname(self._directory), f'{self.output_file_name}.{self.output_file_type}')
-        logging.info(f'saving data to {output_file}')
+appName: FileDataToFile
 
-        file_exists = os.path.isfile(output_file)
+meta:
+  logging_level: INFO
 
-        if (self.output_file_type.lower() == 'json'):
-            data_dict = data.to_pylist()  # data.to_pydict --> convert to the ordered python dictionary
-            # save the json data
-            with open(output_file, 'w') as f:
-                json.dump(data_dict, f, indent=4)
-        elif (self.output_file_type.lower() == 'csv'):
-            write_options = csv.WriteOptions(include_header=not file_exists)
+extract:
+  name: FILE_DATA_EXTRACTOR
+  directory: etl/output/
+  # housekeeping:
+  # reprocess:
+  filters:
+    get_last: true
+    # days_back:
+    include:
+      - "weather_data"
+    suffix:
+      - .csv
 
-            with open(output_file, 'ab' if file_exists else 'wb') as f:
-                csv.write_csv(data , f, write_options=write_options)
-        else:
-            raise ValueError('Invalid data type or file type.')
-        
-        logging.info(f'Data saved successfully at {output_file}')
-----------------
+transformer:
+  name: TRANSFORMER_CHAIN
+  transformers:
+    - name: NO_OPP_TRANSFORMER
 
-Traceback (most recent call last):
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 42, in <module>
-    main()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 39, in main
-    initialize_configurations(config=config, platform=args.platform)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 24, in initialize_configurations
-    extractor.fetch()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\extractors\base_extractor.py", line 13, in fetch
-    self._transformer.transform(results)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 12, in transform
-    df = self._transform(data)
-         ^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\utils.py", line 29, in _transform
-    data = transformer.transform(data)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 17, in transform
-    self._storage.save(df)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\base_storage.py", line 9, in save
-    self._save(data)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\file_storage.py", line 42, in _save
-    csv.write_csv(data , f, write_options=write_options)
-  File "pyarrow\\_csv.pyx", line 1509, in pyarrow._csv.write_csv
-  File "pyarrow\\error.pxi", line 91, in pyarrow.lib.check_status
-pyarrow.lib.ArrowInvalid: Unsupported Type:struct<lat: double, lon: double>
+storage:
+  name: FILE_STORAGE
+  directory: output/
+  file_name: all_weather_data
+  file_type: .csv
+  
 
-C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>
