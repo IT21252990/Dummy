@@ -1,352 +1,55 @@
-[
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "LK",
-        "City": "Colombo",
-        "Metric": "temperature (Celsius)",
-        "Value": "28.75"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "LK",
-        "City": "Colombo",
-        "Metric": "humidity (%)",
-        "Value": "69"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "LK",
-        "City": "Colombo",
-        "Metric": "weather",
-        "Value": "broken clouds"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "LK",
-        "City": "Colombo",
-        "Metric": "pressure (hPa)",
-        "Value": "1012"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "LK",
-        "City": "Colombo",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "3.37"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "GB",
-        "City": "London",
-        "Metric": "temperature (Celsius)",
-        "Value": "12.94"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "GB",
-        "City": "London",
-        "Metric": "humidity (%)",
-        "Value": "91"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "GB",
-        "City": "London",
-        "Metric": "weather",
-        "Value": "overcast clouds"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "GB",
-        "City": "London",
-        "Metric": "pressure (hPa)",
-        "Value": "987"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "GB",
-        "City": "London",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "3.13"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "US",
-        "City": "New York",
-        "Metric": "temperature (Celsius)",
-        "Value": "14.83"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "US",
-        "City": "New York",
-        "Metric": "humidity (%)",
-        "Value": "57"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "US",
-        "City": "New York",
-        "Metric": "weather",
-        "Value": "broken clouds"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "US",
-        "City": "New York",
-        "Metric": "pressure (hPa)",
-        "Value": "1012"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "US",
-        "City": "New York",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "4.12"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "FR",
-        "City": "Paris",
-        "Metric": "temperature (Celsius)",
-        "Value": "13.7"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "FR",
-        "City": "Paris",
-        "Metric": "humidity (%)",
-        "Value": "95"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "FR",
-        "City": "Paris",
-        "Metric": "weather",
-        "Value": "light intensity drizzle rain"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "FR",
-        "City": "Paris",
-        "Metric": "pressure (hPa)",
-        "Value": "993"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "FR",
-        "City": "Paris",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "5.14"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "JP",
-        "City": "Tokyo",
-        "Metric": "temperature (Celsius)",
-        "Value": "16.83"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "JP",
-        "City": "Tokyo",
-        "Metric": "humidity (%)",
-        "Value": "91"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "JP",
-        "City": "Tokyo",
-        "Metric": "weather",
-        "Value": "moderate rain"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "JP",
-        "City": "Tokyo",
-        "Metric": "pressure (hPa)",
-        "Value": "1011"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "JP",
-        "City": "Tokyo",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "8.75"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "AU",
-        "City": "Sydney",
-        "Metric": "temperature (Celsius)",
-        "Value": "16.13"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "AU",
-        "City": "Sydney",
-        "Metric": "humidity (%)",
-        "Value": "65"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "AU",
-        "City": "Sydney",
-        "Metric": "weather",
-        "Value": "broken clouds"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "AU",
-        "City": "Sydney",
-        "Metric": "pressure (hPa)",
-        "Value": "1024"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "AU",
-        "City": "Sydney",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "5.14"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "DE",
-        "City": "Berlin",
-        "Metric": "temperature (Celsius)",
-        "Value": "13.69"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "DE",
-        "City": "Berlin",
-        "Metric": "humidity (%)",
-        "Value": "97"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "DE",
-        "City": "Berlin",
-        "Metric": "weather",
-        "Value": "light rain"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "DE",
-        "City": "Berlin",
-        "Metric": "pressure (hPa)",
-        "Value": "1000"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "DE",
-        "City": "Berlin",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "3.6"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "IN",
-        "City": "Delhi",
-        "Metric": "temperature (Celsius)",
-        "Value": "29.05"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "IN",
-        "City": "Delhi",
-        "Metric": "humidity (%)",
-        "Value": "65"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "IN",
-        "City": "Delhi",
-        "Metric": "weather",
-        "Value": "haze"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "IN",
-        "City": "Delhi",
-        "Metric": "pressure (hPa)",
-        "Value": "1012"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "IN",
-        "City": "Delhi",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "1.54"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "RU",
-        "City": "Moscow",
-        "Metric": "temperature (Celsius)",
-        "Value": "6.95"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "RU",
-        "City": "Moscow",
-        "Metric": "humidity (%)",
-        "Value": "83"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "RU",
-        "City": "Moscow",
-        "Metric": "weather",
-        "Value": "overcast clouds"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "RU",
-        "City": "Moscow",
-        "Metric": "pressure (hPa)",
-        "Value": "1012"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "RU",
-        "City": "Moscow",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "3.81"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "CN",
-        "City": "Beijing",
-        "Metric": "temperature (Celsius)",
-        "Value": "17.94"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "CN",
-        "City": "Beijing",
-        "Metric": "humidity (%)",
-        "Value": "48"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "CN",
-        "City": "Beijing",
-        "Metric": "weather",
-        "Value": "overcast clouds"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "CN",
-        "City": "Beijing",
-        "Metric": "pressure (hPa)",
-        "Value": "1013"
-    },
-    {
-        "DateTime": "2024-10-09 10:53:24",
-        "CountryCode": "CN",
-        "City": "Beijing",
-        "Metric": "wind speed (meter/sec)",
-        "Value": "1.26"
-    }
-]
+In this bar plot, we compare the execution times for each operation. Polars is expected to outperform Pandas in every operation due to its multi-threading capabilities and efficient memory management.
+
+Memory Usage for Operations
+For each operation, it’s also important to understand how memory usage differs between Pandas and Polars. We will measure the memory usage before and after performing each task.
+
+# Memory usage before and after operations in Pandas
+pd_memory_before = df_pd.memory_usage(deep=True).sum() / (1024**2)  # Convert to MB
+df_pd_filtered = df_pd[df_pd['col03'] > 20000]
+pd_memory_after = df_pd.memory_usage(deep=True).sum() / (1024**2)
+
+# Memory usage before and after operations in Polars
+pl_memory_before = df_pl.estimated_size() / (1024**2)
+df_pl_filtered = df_pl.filter(pl.col('col03') > 20000)
+pl_memory_after = df_pl.estimated_size() / (1024**2)
+
+# Printing memory usage results
+print(f"Pandas Memory Before Filtering: {pd_memory_before:.2f} MB")
+print(f"Pandas Memory After Filtering: {pd_memory_after:.2f} MB")
+print(f"Polars Memory Before Filtering: {pl_memory_before:.2f} MB")
+print(f"Polars Memory After Filtering: {pl_memory_after:.2f} MB")
+
+
+This gives us insights into how memory usage fluctuates during operations. Polars is expected to be more memory-efficient, particularly when handling large datasets.
+
+Visualizing Memory Usage
+We can visualize memory usage before and after operations for both libraries:
+
+# Store memory usage before and after filtering
+memory_before = [pd_memory_before, pl_memory_before]
+memory_after = [pd_memory_after, pl_memory_after]
+libraries = ['Pandas', 'Polars']
+
+# Plotting memory usage before and after filtering
+plt.figure(figsize=(8, 6))
+plt.bar(libraries, memory_before, color='lightblue', label='Before Filtering')
+plt.bar(libraries, memory_after, bottom=memory_before, color='orange', label='After Filtering')
+plt.title('Memory Usage: Pandas vs Polars (Before and After Filtering)')
+plt.ylabel('Memory (MB)')
+plt.legend()
+plt.show()
+
+
+This visualization compares the memory usage before and after performing the filtering operation for both Pandas and Polars. It shows how each library’s memory footprint changes during data manipulation.
+
+Conclusion: Choosing Between Pandas and Polars
+The performance benchmarks show that Polars outperforms Pandas in most data manipulation tasks, particularly when dealing with large datasets. Polars offers:
+
+Faster execution times across all operations due to multi-threading and optimized algorithms.
+Lower memory consumption, allowing it to handle larger datasets more efficiently.
+Better scalability for big data scenarios, making it a go-to choice for handling millions or billions of rows.
+However, Pandas remains highly popular and user-friendly, with a richer ecosystem and broader support for data visualization libraries, third-party packages, and machine learning frameworks. For smaller datasets or simpler operations, Pandas is still a highly effective and practical choice.
+
+Ultimately, the decision between Pandas and Polars depends on the size of your data and the performance requirements of your application. If you're working with large datasets and need to perform complex, multi-step transformations, Polars is the clear winner. For everyday tasks on smaller datasets, Pandas remains an excellent choice.
+
+By incorporating these performance insights into your workflow, you can better optimize your data processing tasks and make more informed decisions about which tool to use for your specific use case.
