@@ -1,55 +1,66 @@
-In this bar plot, we compare the execution times for each operation. Polars is expected to outperform Pandas in every operation due to its multi-threading capabilities and efficient memory management.
+import os
+import psycopg2
+import pyarrow as pa
+import pandas as pd
+from storages.base_storage import BaseStorage
 
-Memory Usage for Operations
-For each operation, it’s also important to understand how memory usage differs between Pandas and Polars. We will measure the memory usage before and after performing each task.
+class PostgresStorage(BaseStorage):
+    NAME = 'POSTGRES_STORAGE'
 
-# Memory usage before and after operations in Pandas
-pd_memory_before = df_pd.memory_usage(deep=True).sum() / (1024**2)  # Convert to MB
-df_pd_filtered = df_pd[df_pd['col03'] > 20000]
-pd_memory_after = df_pd.memory_usage(deep=True).sum() / (1024**2)
+    def __init__(self, app_name: str, config) -> None:
+        super().__init__(app_name, config)
+        
+        # Load database connection configurations from config
+        self._db_name = config['db_name']
+        self._db_user = config['db_user']
+        self._db_password = config['db_password']
+        self._db_host = config['db_host']
+        self._db_port = config['db_port']
+        self._table_name = config['table_name']
 
-# Memory usage before and after operations in Polars
-pl_memory_before = df_pl.estimated_size() / (1024**2)
-df_pl_filtered = df_pl.filter(pl.col('col03') > 20000)
-pl_memory_after = df_pl.estimated_size() / (1024**2)
+        # Create the connection string
+        self._connection_string = f"dbname={self._db_name} user={self._db_user} password={self._db_password} host={self._db_host} port={self._db_port}"
 
-# Printing memory usage results
-print(f"Pandas Memory Before Filtering: {pd_memory_before:.2f} MB")
-print(f"Pandas Memory After Filtering: {pd_memory_after:.2f} MB")
-print(f"Polars Memory Before Filtering: {pl_memory_before:.2f} MB")
-print(f"Polars Memory After Filtering: {pl_memory_after:.2f} MB")
+    def save(self, arrow_table: pa.Table):
+        """Save Arrow table directly to the PostgreSQL database using psycopg2."""
+        
+        # Convert the Arrow Table to Pandas DataFrame
+        df = arrow_table.to_pandas()
 
+        #df.columns = [col.lower() for col in df.columns]
 
-This gives us insights into how memory usage fluctuates during operations. Polars is expected to be more memory-efficient, particularly when handling large datasets.
+        # Create the INSERT INTO statement with placeholders for data
+        columns = list(df.columns)
+        insert_query = f"""
+            INSERT INTO {self._table_name} ({', '.join(columns)}) 
+            VALUES ({', '.join(['%s'] * len(columns))})
+        """
 
-Visualizing Memory Usage
-We can visualize memory usage before and after operations for both libraries:
+        # Convert DataFrame rows to tuples
+        data = [tuple(row) for row in df.itertuples(index=False, name=None)]
 
-# Store memory usage before and after filtering
-memory_before = [pd_memory_before, pl_memory_before]
-memory_after = [pd_memory_after, pl_memory_after]
-libraries = ['Pandas', 'Polars']
+        # Open a connection to the PostgreSQL database
+        try:
+            connection = psycopg2.connect(self._connection_string)
+            cursor = connection.cursor()
 
-# Plotting memory usage before and after filtering
-plt.figure(figsize=(8, 6))
-plt.bar(libraries, memory_before, color='lightblue', label='Before Filtering')
-plt.bar(libraries, memory_after, bottom=memory_before, color='orange', label='After Filtering')
-plt.title('Memory Usage: Pandas vs Polars (Before and After Filtering)')
-plt.ylabel('Memory (MB)')
-plt.legend()
-plt.show()
+            # Execute batch insertions using psycopg2's executemany method
+            cursor.executemany(insert_query, data)
 
+            # Commit the transaction
+            connection.commit()
 
-This visualization compares the memory usage before and after performing the filtering operation for both Pandas and Polars. It shows how each library’s memory footprint changes during data manipulation.
+            print(f"Data successfully saved to PostgreSQL table '{self._table_name}'")
 
-Conclusion: Choosing Between Pandas and Polars
-The performance benchmarks show that Polars outperforms Pandas in most data manipulation tasks, particularly when dealing with large datasets. Polars offers:
+        except Exception as e:
+            # Handle exceptions and roll back if necessary
+            if connection:
+                connection.rollback()
+            print(f"Error occurred while saving data: {e}")
 
-Faster execution times across all operations due to multi-threading and optimized algorithms.
-Lower memory consumption, allowing it to handle larger datasets more efficiently.
-Better scalability for big data scenarios, making it a go-to choice for handling millions or billions of rows.
-However, Pandas remains highly popular and user-friendly, with a richer ecosystem and broader support for data visualization libraries, third-party packages, and machine learning frameworks. For smaller datasets or simpler operations, Pandas is still a highly effective and practical choice.
-
-Ultimately, the decision between Pandas and Polars depends on the size of your data and the performance requirements of your application. If you're working with large datasets and need to perform complex, multi-step transformations, Polars is the clear winner. For everyday tasks on smaller datasets, Pandas remains an excellent choice.
-
-By incorporating these performance insights into your workflow, you can better optimize your data processing tasks and make more informed decisions about which tool to use for your specific use case.
+        finally:
+            # Ensure the cursor and connection are closed properly
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
