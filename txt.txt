@@ -1,118 +1,24 @@
- https://loud-days-go.loca.lt
-
-
-Traceback (most recent call last):
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\postgres_storage.py", line 43, in save
-    connection = psycopg2.connect(self._connection_string)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\jayakal\AppData\Local\anaconda3\Lib\site-packages\psycopg2\__init__.py", line 122, in connect
-    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-psycopg2.OperationalError: connection to server at "loud-days-go.loca.lt" (193.34.76.44), port 5432 failed: Connection refused (0x0000274D/10061)
+C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>python main.py --config weather_2_postgres_config.yaml --platform pandas
+2024-10-24 05:48:11,656 - root - INFO - Using TRANSFORMER_CHAIN ...
+2024-10-24 05:48:11,671 - root - INFO - Initialized Chain Transformer.
+2024-10-24 05:48:11,671 - root - INFO - Fetching weather data...
+2024-10-24 05:48:12,601 - root - INFO - Weather data for Colombo fetched successfully
+2024-10-24 05:48:13,435 - root - INFO - Weather data for London fetched successfully
+2024-10-24 05:48:14,066 - root - INFO - Weather data for New York fetched successfully
+2024-10-24 05:48:14,675 - root - INFO - Weather data for Paris fetched successfully
+2024-10-24 05:48:15,281 - root - INFO - Weather data for Tokyo fetched successfully
+2024-10-24 05:48:16,100 - root - INFO - Weather data for Sydney fetched successfully
+2024-10-24 05:48:16,729 - root - INFO - Weather data for Berlin fetched successfully
+2024-10-24 05:48:17,534 - root - INFO - Weather data for Delhi fetched successfully
+2024-10-24 05:48:18,556 - root - INFO - Weather data for Moscow fetched successfully
+2024-10-24 05:48:19,485 - root - INFO - Weather data for Beijing fetched successfully
+2024-10-24 05:48:21,487 - root - INFO - Fetched 10 results and encountered 0 errors.
+2024-10-24 05:48:21,499 - root - INFO - Using WEATHER_TRANSFORMER ...
+2024-10-24 05:48:21,499 - root - INFO - Initialized Pandas DataTransformer.
+2024-10-24 05:48:21,499 - root - INFO - Transforming data using Pandas...
+2024-10-24 05:48:21,515 - root - INFO - Data transformation using Pandas Completed.
+Error occurred while saving data: connection to server at "tasty-pillows-wonder.loca.lt" (193.34.76.44), port 5432 failed: Connection timed out (0x0000274C/10060)
         Is the server running on that host and accepting TCP/IP connections?
 
 
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\postgres_storage.py", line 56, in save
-    if connection:
-       ^^^^^^^^^^
-UnboundLocalError: cannot access local variable 'connection' where it is not associated with a value
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 42, in <module>
-    main()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 39, in main
-    initialize_configurations(config=config, platform=args.platform)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\main.py", line 24, in initialize_configurations
-    extractor.fetch()
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\extractors\base_extractor.py", line 13, in fetch
-    self._transformer.transform(results)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\transformers\base_transformer.py", line 17, in transform
-    self._storage.save(df)
-  File "C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl\storages\postgres_storage.py", line 62, in save
-    if cursor:
-       ^^^^^^
-UnboundLocalError: cannot access local variable 'cursor' where it is not associated with a value
-
 C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>
-
-
-import os
-import psycopg2
-import pyarrow as pa
-import pandas as pd
-from storages.base_storage import BaseStorage
-
-class PostgresStorage(BaseStorage):
-    NAME = 'POSTGRES_STORAGE'
-
-    def __init__(self, app_name: str, config) -> None:
-        super().__init__(app_name, config)
-        
-        # Load database connection configurations from config
-        self._db_name = config['db_name']
-        self._db_user = config['db_user']
-        self._db_password = config['db_password']
-        self._db_host = config['db_host']
-        self._db_port = config['db_port']
-        self._table_name = config['table_name']
-
-        # Create the connection string
-        self._connection_string = f"dbname={self._db_name} user={self._db_user} password={self._db_password} host={self._db_host} port={self._db_port}"
-
-    def save(self, arrow_table: pa.Table):
-        
-        # Convert the Arrow Table to Pandas DataFrame
-        df = arrow_table.to_pandas()
-
-        #df.columns = [col.lower() for col in df.columns]
-
-        # Create the INSERT INTO statement with placeholders for data
-        columns = list(df.columns)
-        insert_query = f"""
-            INSERT INTO {self._table_name} ({', '.join(columns)}) 
-            VALUES ({', '.join(['%s'] * len(columns))})
-        """
-
-        # Convert DataFrame rows to tuples
-        data = [tuple(row) for row in df.itertuples(index=False, name=None)]
-
-        # Open a connection to the PostgreSQL database
-        try:
-            connection = psycopg2.connect(self._connection_string)
-            cursor = connection.cursor()
-
-            # Execute batch insertions using psycopg2's executemany method
-            cursor.executemany(insert_query, data)
-
-            # Commit the transaction
-            connection.commit()
-
-            print(f"Data successfully saved to PostgreSQL table '{self._table_name}'")
-
-        except Exception as e:
-            # Handle exceptions and roll back if necessary
-            if connection:
-                connection.rollback()
-            print(f"Error occurred while saving data: {e}")
-
-        finally:
-            # Ensure the cursor and connection are closed properly
-            if cursor:
-                cursor.close()
-            if connection:
-                connection.close()
-
-
-
-name: POSTGRES_STORAGE
-  db_name: weather_data
-  db_user: postgres
-  db_password: 1234
-  db_host: 'loud-days-go.loca.lt'
-  db_port: 5432
-  table_name: weather_metrics
