@@ -1,24 +1,38 @@
-C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>python main.py --config weather_2_postgres_config.yaml --platform pandas
-2024-10-24 05:48:11,656 - root - INFO - Using TRANSFORMER_CHAIN ...
-2024-10-24 05:48:11,671 - root - INFO - Initialized Chain Transformer.
-2024-10-24 05:48:11,671 - root - INFO - Fetching weather data...
-2024-10-24 05:48:12,601 - root - INFO - Weather data for Colombo fetched successfully
-2024-10-24 05:48:13,435 - root - INFO - Weather data for London fetched successfully
-2024-10-24 05:48:14,066 - root - INFO - Weather data for New York fetched successfully
-2024-10-24 05:48:14,675 - root - INFO - Weather data for Paris fetched successfully
-2024-10-24 05:48:15,281 - root - INFO - Weather data for Tokyo fetched successfully
-2024-10-24 05:48:16,100 - root - INFO - Weather data for Sydney fetched successfully
-2024-10-24 05:48:16,729 - root - INFO - Weather data for Berlin fetched successfully
-2024-10-24 05:48:17,534 - root - INFO - Weather data for Delhi fetched successfully
-2024-10-24 05:48:18,556 - root - INFO - Weather data for Moscow fetched successfully
-2024-10-24 05:48:19,485 - root - INFO - Weather data for Beijing fetched successfully
-2024-10-24 05:48:21,487 - root - INFO - Fetched 10 results and encountered 0 errors.
-2024-10-24 05:48:21,499 - root - INFO - Using WEATHER_TRANSFORMER ...
-2024-10-24 05:48:21,499 - root - INFO - Initialized Pandas DataTransformer.
-2024-10-24 05:48:21,499 - root - INFO - Transforming data using Pandas...
-2024-10-24 05:48:21,515 - root - INFO - Data transformation using Pandas Completed.
-Error occurred while saving data: connection to server at "tasty-pillows-wonder.loca.lt" (193.34.76.44), port 5432 failed: Connection timed out (0x0000274C/10060)
-        Is the server running on that host and accepting TCP/IP connections?
+appName: weatherDataToPostgreSQL
+meta:
+  logging_level: INFO
+  platform: pandas
 
+extract:
+  name: OPEN_WEATHER_API
+  request:
+    api_key: 341d03a5a889f591095a6a9aa9a24e71
+    batch_size: 10
+    cities:
+    - Colombo
+    - London
+    - New York
+    - Paris
+    - Tokyo
+    - Sydney
+    - Berlin
+    - Delhi
+    - Moscow
+    - Beijing
+    sleep: 2
+    units: metric
 
-C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\open_weather\Task_01_v4\etl>
+transformer:
+  name: TRANSFORMER_CHAIN
+  transformers:
+    - name: WEATHER_TRANSFORMER
+      return_obj: true
+
+storage:
+  name: 'POSTGRES_STORAGE'
+  db_name: 'weather_data'
+  db_user: 'postgres'
+  db_password: '1234'
+  db_host: '0.tcp.ap.ngrok.io'
+  db_port: 15890
+  table_name: 'weather_metrics_2'
