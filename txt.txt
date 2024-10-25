@@ -1,47 +1,88 @@
-from datetime import datetime
-import json
-import os
+import io
 import logging
-import pandas as pd
+import os
+import psycopg2
 import pyarrow as pa
-from pyarrow import csv
+import pandas as pd
+from psycopg2 import OperationalError, DatabaseError, InterfaceError, IntegrityError
 from storages.base_storage import BaseStorage
 
-class FileStorage(BaseStorage):
-    NAME = 'FILE_STORAGE'
+class PostgresStorage(BaseStorage):
+    NAME = 'POSTGRES_STORAGE'
 
-    def __init__(self, app_name: str, config: dict) -> None:
+    def __init__(self, app_name: str, config) -> None:
         super().__init__(app_name, config)
-        self._directory = config.get('directory')
-        self.output_file_name = config.get('file_name')
-        self.output_file_type = config.get('file_type')
-
-        #Create the directory if it doesn't exist
-        output_dir = os.path.dirname(self._directory)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir , exist_ok=True)
-
-    def _save(self,data):
-
-        datetime_now = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-
-        output_file = os.path.join(os.path.dirname(self._directory), f'{self.output_file_name}_{datetime_now}.{self.output_file_type}')
-        logging.info(f'saving data to {output_file}')
-
-        file_exists = os.path.isfile(output_file)
-
-        if (self.output_file_type.lower() == 'json'):
-            data_dict = data.to_pylist()  # data.to_pydict --> convert to the ordered python dictionary
-            # save the json data
-            with open(output_file, 'w') as f:
-                json.dump(data_dict, f, indent=4)
-        elif (self.output_file_type.lower() == 'csv'):
-
-            write_options = csv.WriteOptions(include_header=not file_exists)
-
-            with open(output_file, 'ab' if file_exists else 'wb') as f:
-                csv.write_csv(data , f, write_options=write_options)
-        else:
-            raise ValueError('Invalid data type or file type.')
         
-        logging.info(f'Data saved successfully at {output_file}')
+        # Load database connection configurations from config
+        self._db_name = config['db_name']
+        self._db_user = config['db_user']
+        self._db_password = config['db_password']
+        self._db_host = config['db_host']
+        self._db_port = config['db_port']
+        self._table_name = config['table_name']
+
+        # Create the connection string
+        self._connection_string = f"dbname={self._db_name} user={self._db_user} password={self._db_password} host={self._db_host} port={self._db_port}"
+
+        logging.info("Initializing PostgreSQL database...")
+
+    def save(self, arrow_table: pa.Table):
+        """Save Arrow table directly to the PostgreSQL database using psycopg2."""
+        connection = None
+        cursor = None
+        try:
+            # Step 1: Convert Arrow Table to Pandas DataFrame
+            logging.info("Converting Arrow table to Pandas DataFrame.")
+            df = arrow_table.to_pandas()
+
+            # Step 2: Prepare data for COPY command
+            logging.info("Preparing data for PostgreSQL COPY command.")
+            output = io.StringIO()
+            df.to_csv(output, index=False, header=False)  # Convert DataFrame to CSV format
+            output.seek(0)
+
+            # Step 3: Establish connection to PostgreSQL
+            logging.info("Connecting to PostgreSQL database.")
+            connection = psycopg2.connect(self._connection_string)
+            cursor = connection.cursor()
+
+            # Step 4: Use COPY command to insert data into the PostgreSQL table
+            logging.info(f"Executing COPY command to insert data into table '{self._table_name}'.")
+            cursor.copy_from(output, self._table_name, sep=',')
+            connection.commit()
+            logging.info(f"Data successfully saved to PostgreSQL table '{self._table_name}'.")
+
+        except (OperationalError, InterfaceError) as conn_err:
+            logging.error(f"Connection failed: {conn_err}")
+            if connection:
+                connection.rollback()
+
+        except IntegrityError as integrity_err:
+            logging.error(f"Data integrity issue: {integrity_err}")
+            if connection:
+                connection.rollback()
+
+        except DatabaseError as db_err:
+            logging.error(f"Database error occurred: {db_err}")
+            if connection:
+                connection.rollback()
+
+        except Exception as e:
+            logging.error(f"Unexpected error occurred: {e}")
+            if connection:
+                connection.rollback()
+
+        finally:
+            # Step 5: Ensure that resources are closed properly
+            if cursor:
+                try:
+                    cursor.close()
+                except Exception as cursor_close_err:
+                    logging.error(f"Error while closing cursor: {cursor_close_err}")
+
+            if connection:
+                try:
+                    connection.close()
+                except Exception as conn_close_err:
+                    logging.error(f"Error while closing connection: {conn_close_err}")
+
