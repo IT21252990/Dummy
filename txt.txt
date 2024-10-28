@@ -1,88 +1,44 @@
-import io
-import logging
-import os
-import psycopg2
-import pyarrow as pa
 import pandas as pd
-from psycopg2 import OperationalError, DatabaseError, InterfaceError, IntegrityError
+import pyarrow as pa
+from supabase import create_client, Client
 from storages.base_storage import BaseStorage
+import os
+import logging
 
-class PostgresStorage(BaseStorage):
-    NAME = 'POSTGRES_STORAGE'
+class SupabaseStorage(BaseStorage):
+    NAME = 'SUPABASE_STORAGE'
 
-    def __init__(self, app_name: str, config) -> None:
+    def __init__(self, app_name: str, config: dict) -> None:
         super().__init__(app_name, config)
         
-        # Load database connection configurations from config
-        self._db_name = config['db_name']
-        self._db_user = config['db_user']
-        self._db_password = config['db_password']
-        self._db_host = config['db_host']
-        self._db_port = config['db_port']
+        # Initialize Supabase credentials from config
+        self._supabase_url = os.getenv('SUPABASE_URL')
+        self._supabase_key = os.getenv('SUPABASE_KEY')
         self._table_name = config['table_name']
 
-        # Create the connection string
-        self._connection_string = f"dbname={self._db_name} user={self._db_user} password={self._db_password} host={self._db_host} port={self._db_port}"
-
-        logging.info("Initializing PostgreSQL database...")
+        # Create a Supabase client
+        self._client: Client = create_client(self._supabase_url, self._supabase_key)
 
     def save(self, arrow_table: pa.Table):
-        """Save Arrow table directly to the PostgreSQL database using psycopg2."""
-        connection = None
-        cursor = None
+        """Save Arrow table directly to the Supabase database using supabase-py."""
+        
+        # Convert the Arrow Table to a Pandas DataFrame
+        df = arrow_table.to_pandas()
+        
+        # Ensure column names are lowercase to avoid case sensitivity issues
+        df.columns = [col.lower() for col in df.columns]
+        
+        # Convert DataFrame rows to dictionaries for Supabase insertion
+        data = df.to_dict(orient="records")
+
         try:
-            # Step 1: Convert Arrow Table to Pandas DataFrame
-            logging.info("Converting Arrow table to Pandas DataFrame.")
-            df = arrow_table.to_pandas()
+            # Insert data into the Supabase table
+            response = self._client.table(self._table_name).insert(data).execute()
 
-            # Step 2: Prepare data for COPY command
-            logging.info("Preparing data for PostgreSQL COPY command.")
-            output = io.StringIO()
-            df.to_csv(output, index=False, header=False)  # Convert DataFrame to CSV format
-            output.seek(0)
-
-            # Step 3: Establish connection to PostgreSQL
-            logging.info("Connecting to PostgreSQL database.")
-            connection = psycopg2.connect(self._connection_string)
-            cursor = connection.cursor()
-
-            # Step 4: Use COPY command to insert data into the PostgreSQL table
-            logging.info(f"Executing COPY command to insert data into table '{self._table_name}'.")
-            cursor.copy_from(output, self._table_name, sep=',')
-            connection.commit()
-            logging.info(f"Data successfully saved to PostgreSQL table '{self._table_name}'.")
-
-        except (OperationalError, InterfaceError) as conn_err:
-            logging.error(f"Connection failed: {conn_err}")
-            if connection:
-                connection.rollback()
-
-        except IntegrityError as integrity_err:
-            logging.error(f"Data integrity issue: {integrity_err}")
-            if connection:
-                connection.rollback()
-
-        except DatabaseError as db_err:
-            logging.error(f"Database error occurred: {db_err}")
-            if connection:
-                connection.rollback()
+            if response.data:
+                logging.info(f"Data successfully saved to Supabase table '{self._table_name}'")
+            else:
+                logging.error(f"Error inserting data into Supabase. Response: {response}")
 
         except Exception as e:
-            logging.error(f"Unexpected error occurred: {e}")
-            if connection:
-                connection.rollback()
-
-        finally:
-            # Step 5: Ensure that resources are closed properly
-            if cursor:
-                try:
-                    cursor.close()
-                except Exception as cursor_close_err:
-                    logging.error(f"Error while closing cursor: {cursor_close_err}")
-
-            if connection:
-                try:
-                    connection.close()
-                except Exception as conn_close_err:
-                    logging.error(f"Error while closing connection: {conn_close_err}")
-
+            logging.error(f"Error occurred while saving data to Supabase: {e}")
