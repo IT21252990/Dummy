@@ -1,44 +1,85 @@
-import pandas as pd
-import pyarrow as pa
-from supabase import create_client, Client
-from storages.base_storage import BaseStorage
+from airflow import DAG
+from airflow.operators.bash import BashOperator
+from airflow.operators.email import EmailOperator
+from airflow.operators.python import PythonOperator
+from datetime import datetime
+import pendulum
+import glob
 import os
 import logging
 
-class SupabaseStorage(BaseStorage):
-    NAME = 'SUPABASE_STORAGE'
+# Set local timezone
+local_tz = pendulum.timezone("Asia/Kolkata")  
 
-    def __init__(self, app_name: str, config: dict) -> None:
-        super().__init__(app_name, config)
-        
-        # Initialize Supabase credentials from config
-        self._supabase_url = os.getenv('SUPABASE_URL')
-        self._supabase_key = os.getenv('SUPABASE_KEY')
-        self._table_name = config['table_name']
+# Email configuration
+EMAIL_RECIPIENTS = ['kalingajayathilaka@gmail.com']  
+EMAIL_SUBJECT = 'Weather Metrics Visualization'
+EMAIL_BODY = """
+Hi,
 
-        # Create a Supabase client
-        self._client: Client = create_client(self._supabase_url, self._supabase_key)
+Please find attached the latest weather metrics visualization.
 
-    def save(self, arrow_table: pa.Table):
-        """Save Arrow table directly to the Supabase database using supabase-py."""
-        
-        # Convert the Arrow Table to a Pandas DataFrame
-        df = arrow_table.to_pandas()
-        
-        # Ensure column names are lowercase to avoid case sensitivity issues
-        df.columns = [col.lower() for col in df.columns]
-        
-        # Convert DataFrame rows to dictionaries for Supabase insertion
-        data = df.to_dict(orient="records")
+Best regards,
+Your ETL Pipeline
+"""
+OUTPUT_DIRECTORY = '/opt/airflow/etl/weather_images'
 
-        try:
-            # Insert data into the Supabase table
-            response = self._client.table(self._table_name).insert(data).execute()
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+}
 
-            if response.data:
-                logging.info(f"Data successfully saved to Supabase table '{self._table_name}'")
-            else:
-                logging.error(f"Error inserting data into Supabase. Response: {response}")
+def find_latest_png(**context):
+    """Fetch the latest PNG file from the output directory."""
+    list_of_files = glob.glob(os.path.join(OUTPUT_DIRECTORY, '*.png'))
+    if list_of_files:
+        latest_file = max(list_of_files, key=os.path.getctime)  # Get the most recently created file
+        logging.info(f"Latest PNG file found: {latest_file}")
+        context['ti'].xcom_push(key='latest_png_file', value=latest_file)  # Push the file path to XCom
+    else:
+        raise FileNotFoundError("No PNG files found in the output directory.")
 
-        except Exception as e:
-            logging.error(f"Error occurred while saving data to Supabase: {e}")
+# Define the DAG
+with DAG(
+    dag_id='02_etl_pipeline',
+    default_args=default_args,
+    description='Run weather data ETL pipeline with end-of-day aggregation and visualization',
+    schedule_interval='*/15 6-18 * * 1-5',  # Runs every 15 minutes from 6 AM to 6 PM, Monday-Friday
+    start_date=datetime(2024, 1, 1, tzinfo=local_tz),
+    catchup=False,
+    tags=['ETL'],
+) as dag:
+
+    # Task to fetch weather data and save as CSV
+    fetch_weather_data = BashOperator(
+        task_id='fetch_weather_data',
+        bash_command='cd /opt/airflow/etl && python main.py --config config.yaml --platform pandas --etl_type fetch',
+    )
+
+    # Task to aggregate daily files and generate visualization at the end of the day (6 PM)
+    aggregate_and_visualize = BashOperator(
+        task_id='aggregate_and_visualize',
+        bash_command='cd /opt/airflow/etl && python main.py --config config.yaml --platform pandas --etl_type aggregate',
+    )
+
+    # Task to fetch the latest PNG file
+    fetch_latest_png = PythonOperator(
+        task_id='fetch_latest_png',
+        python_callable=find_latest_png,
+    )
+
+    # Task to send email with the visualization
+    send_email = EmailOperator(
+        task_id='send_email',
+        to=EMAIL_RECIPIENTS,
+        subject=EMAIL_SUBJECT,
+        html_content=EMAIL_BODY,
+        files=["{{ ti.xcom_pull(task_ids='fetch_latest_png', key='latest_png_file') }}"],  # Pull file path from XCom
+    )
+
+    # Define dependencies
+    fetch_weather_data  # Runs independently throughout the day
+    aggregate_and_visualize >> fetch_latest_png >> send_email  # Only runs at the end of the day
