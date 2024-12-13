@@ -1,85 +1,44 @@
-from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.email import EmailOperator
-from airflow.operators.python import PythonOperator
-from datetime import datetime
-import pendulum
-import glob
-import os
-import logging
+from fastapi import APIRouter, Request, status
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+from database import get_db
+import uuid
 
-# Set local timezone
-local_tz = pendulum.timezone("Asia/Kolkata")  
+router = APIRouter(prefix="/api/v1", tags=["Health"])
 
-# Email configuration
-EMAIL_RECIPIENTS = ['kalingajayathilaka@gmail.com']  
-EMAIL_SUBJECT = 'Weather Metrics Visualization'
-EMAIL_BODY = """
-Hi,
+from sqlalchemy.sql import text
 
-Please find attached the latest weather metrics visualization.
+@router.get("/health", response_model=dict)
+def health_check(request: Request):
+    request_id = str(uuid.uuid4())  # Generate a unique request ID
+    app_status = "healthy"
+    db_status = "unknown"
 
-Best regards,
-Your ETL Pipeline
-"""
-OUTPUT_DIRECTORY = '/opt/airflow/etl/weather_images'
-
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-}
-
-def find_latest_png(**context):
-    """Fetch the latest PNG file from the output directory."""
-    list_of_files = glob.glob(os.path.join(OUTPUT_DIRECTORY, '*.png'))
-    if list_of_files:
-        latest_file = max(list_of_files, key=os.path.getctime)  # Get the most recently created file
-        logging.info(f"Latest PNG file found: {latest_file}")
-        context['ti'].xcom_push(key='latest_png_file', value=latest_file)  # Push the file path to XCom
+    # Check database status
+    try:
+        db: Session = next(get_db())
+        db.execute(text("SELECT 1"))  # Use `text` for raw SQL
+        db_status = "connected"
+    except SQLAlchemyError as e:
+        db_status = "disconnected"
+        error_detail = str(e)
+    except Exception as e:
+        db_status = "error"
+        error_detail = str(e)
     else:
-        raise FileNotFoundError("No PNG files found in the output directory.")
+        error_detail = None
 
-# Define the DAG
-with DAG(
-    dag_id='02_etl_pipeline',
-    default_args=default_args,
-    description='Run weather data ETL pipeline with end-of-day aggregation and visualization',
-    schedule_interval='*/15 6-18 * * 1-5',  # Runs every 15 minutes from 6 AM to 6 PM, Monday-Friday
-    start_date=datetime(2024, 1, 1, tzinfo=local_tz),
-    catchup=False,
-    tags=['ETL'],
-) as dag:
+    # Construct the response
+    response = {
+        "status": 200 if db_status == "connected" else 500,
+        "success": db_status == "connected",
+        "payload": {
+            "app_status": app_status,
+            "db_status": db_status
+        },
+        "message": "Health check successful" if db_status == "connected" else "Health check failed",
+        "errors": [] if error_detail is None else [error_detail],
+        "request_id": request_id
+    }
 
-    # Task to fetch weather data and save as CSV
-    fetch_weather_data = BashOperator(
-        task_id='fetch_weather_data',
-        bash_command='cd /opt/airflow/etl && python main.py --config config.yaml --platform pandas --etl_type fetch',
-    )
-
-    # Task to aggregate daily files and generate visualization at the end of the day (6 PM)
-    aggregate_and_visualize = BashOperator(
-        task_id='aggregate_and_visualize',
-        bash_command='cd /opt/airflow/etl && python main.py --config config.yaml --platform pandas --etl_type aggregate',
-    )
-
-    # Task to fetch the latest PNG file
-    fetch_latest_png = PythonOperator(
-        task_id='fetch_latest_png',
-        python_callable=find_latest_png,
-    )
-
-    # Task to send email with the visualization
-    send_email = EmailOperator(
-        task_id='send_email',
-        to=EMAIL_RECIPIENTS,
-        subject=EMAIL_SUBJECT,
-        html_content=EMAIL_BODY,
-        files=["{{ ti.xcom_pull(task_ids='fetch_latest_png', key='latest_png_file') }}"],  # Pull file path from XCom
-    )
-
-    # Define dependencies
-    fetch_weather_data  # Runs independently throughout the day
-    aggregate_and_visualize >> fetch_latest_png >> send_email  # Only runs at the end of the day
+    return response
