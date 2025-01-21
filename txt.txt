@@ -1,7 +1,45 @@
-(.venv) PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl> uv sync
+ uv sync --verbose
+DEBUG uv 0.5.21 (3478c068b 2025-01-17)
+DEBUG Found project root: `C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl`
+DEBUG No workspace root found, using project root
+DEBUG Reading Python requests from version file at `C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl\.python-version`    
+DEBUG Using Python request `3.10` from version file at `.python-version`
+DEBUG The virtual environment's Python version does not satisfy `3.10`
+DEBUG Searching for Python 3.10 in managed installations, search path, or registry
+DEBUG Searching for managed installations at `C:\Users\jayakal\AppData\Roaming\uv\python`
+DEBUG Found `cpython-3.12.4-windows-x86_64-none` at `C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl\.venv\scripts\python.exe` (search path)
+DEBUG Ignoring Python interpreter at `C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl\.venv\scripts\python.exe`: system interpreter required
+DEBUG Found `cpython-3.12.4-windows-x86_64-none` at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` (search path)
+DEBUG Skipping interpreter at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` from search path: does not satisfy request `3.10`       
+DEBUG Found `cpython-3.12.4-windows-x86_64-none` at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` (search path)
+DEBUG Skipping interpreter at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` from search path: does not satisfy request `3.10`       
+DEBUG Found `cpython-3.12.4-windows-x86_64-none` at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` (search path)
+DEBUG Skipping interpreter at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` from search path: does not satisfy request `3.10`       
+DEBUG Found `cpython-3.12.4-windows-x86_64-none` at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` (search path)
+DEBUG Skipping interpreter at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` from search path: does not satisfy request `3.10`       
+DEBUG Found `cpython-3.12.4-windows-x86_64-none` at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` (search path)
+DEBUG Skipping interpreter at `C:\Users\jayakal\AppData\Local\anaconda3\python.exe` from search path: does not satisfy request `3.10`       
+DEBUG Python interpreter in the registry is not executable: `Software\Python\PythonCore\3.12
+DEBUG Requested Python not found, checking for available download...
+DEBUG Acquired lock for `C:\Users\jayakal\AppData\Roaming\uv\python`
+DEBUG Using request timeout of 30s
+INFO Fetching requested Python...
+DEBUG Transient request failure for https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz, retrying: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz)
+  Caused by: client error (Connect)
+  Caused by: invalid peer certificate: UnknownIssuer
+DEBUG Transient request failure for https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz, retrying: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz)
+  Caused by: client error (Connect)
+  Caused by: invalid peer certificate: UnknownIssuer
+DEBUG Transient request failure for https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz, retrying: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz)
+  Caused by: client error (Connect)
+  Caused by: invalid peer certificate: UnknownIssuer
+DEBUG Transient request failure for https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz, retrying: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz)
+  Caused by: client error (Connect)
+  Caused by: invalid peer certificate: UnknownIssuer
+DEBUG Released lock at `C:\Users\jayakal\AppData\Roaming\uv\python\.lock`
 error: Failed to download https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz
   Caused by: Request failed after 3 retries
   Caused by: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz)
   Caused by: client error (Connect)
   Caused by: invalid peer certificate: UnknownIssuer
-(.venv) PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl> 
+(.venv) PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl>
