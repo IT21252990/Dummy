@@ -1,44 +1,7 @@
-from fastapi import APIRouter, Request, status
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
-from database import get_db
-import uuid
-
-router = APIRouter(prefix="/api/v1", tags=["Health"])
-
-from sqlalchemy.sql import text
-
-@router.get("/health", response_model=dict)
-def health_check(request: Request):
-    request_id = str(uuid.uuid4())  # Generate a unique request ID
-    app_status = "healthy"
-    db_status = "unknown"
-
-    # Check database status
-    try:
-        db: Session = next(get_db())
-        db.execute(text("SELECT 1"))  # Use `text` for raw SQL
-        db_status = "connected"
-    except SQLAlchemyError as e:
-        db_status = "disconnected"
-        error_detail = str(e)
-    except Exception as e:
-        db_status = "error"
-        error_detail = str(e)
-    else:
-        error_detail = None
-
-    # Construct the response
-    response = {
-        "status": 200 if db_status == "connected" else 500,
-        "success": db_status == "connected",
-        "payload": {
-            "app_status": app_status,
-            "db_status": db_status
-        },
-        "message": "Health check successful" if db_status == "connected" else "Health check failed",
-        "errors": [] if error_detail is None else [error_detail],
-        "request_id": request_id
-    }
-
-    return response
+(.venv) PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl> uv sync
+error: Failed to download https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz
+  Caused by: Request failed after 3 retries
+  Caused by: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20250115/cpython-3.10.16%2B20250115-x86_64-pc-windows-msvc-install_only_stripped.tar.gz)
+  Caused by: client error (Connect)
+  Caused by: invalid peer certificate: UnknownIssuer
+(.venv) PS C:\Users\jayakal\OneDrive - acuitykp\Documents\Projects\airflow-etl> 
